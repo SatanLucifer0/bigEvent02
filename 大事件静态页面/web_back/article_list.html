@@ -24,16 +24,16 @@
                 <div class="col-xs-6">
                     <form class="form-inline">
                         <select id="selCategory" name="" class="form-control input-sm">
-                            <option>所有分类</option>
+                            <option value=''>所有分类</option>
                             <option>未分类</option>
                             <option>奇趣事</option>
                             <option>会生活</option>
                             <option>爱旅行</option>
                         </select>
                         <select id="selStatus" name="" class="form-control input-sm">
-                            <option>所有状态</option>
-                            <option value="drafted">草稿</option>
-                            <option value="published">已发布</option>
+                            <option value=''>所有状态</option>
+                            <option >草稿</option>
+                            <option >已发布</option>
                         </select>
                         <button id="btnSearch" class="btn btn-default btn-sm">筛选</button>
                     </form>
@@ -285,7 +285,21 @@
         {{/each}}
     </script>
 
-
+    <script id="artic" type="text/html">
+        {{each data v}}
+            <tr>
+                <td>{{v.title}}</td>
+                <td>{{v.author}}</td>
+                <td>{{v.type}}</td>
+                <td class="text-center">{{v.date}}</td>
+                <td class="text-center">{{v.state}}</td>
+                <td class="text-center">
+                    <a href="#" data-id='{{v.id}}' class="btn btn-default btn-xs art-edit">编辑</a>
+                    <a href="#" data-id='{{v.id}}' class="btn btn-danger btn-xs art-delete">删除</a>
+                </td>
+            </tr>
+        {{/each}}
+    </script>
 
     <script>
 
@@ -304,8 +318,53 @@
             });
 
 
-            // 分页效果
-            
+            // 进入页面,根据类别查询和状态查询获取对应页数的文章显示
+            // 之前模版是
+            function getData(mypage) {
+                var category = $('#selCategory').val(); //文章类别id
+                var selStatus = $('#selStatus').val() //文章状态(草稿/已发布)
+                $.get({
+                    url: 'http://localhost:8000/admin/search',
+                    data: {
+                        perpage: 5,
+                        page: mypage,
+                        state: selStatus,
+                        type: category
+                    },
+                    success: function (backData) {
+                        console.log(backData);
+                        if (backData.code == 200) {
+                            //调用模板引擎的核心方法.
+                            var resHtml = template('artic', backData);
+                            $('tbody').html(resHtml);
+                        }
+                    }
+                });
+            }
+
+
+            //  点击筛选按钮,找到相应的类别和转太的文章显示在
+            $('#btnSearch').on('click', function (e) {
+                e.preventDefault();
+                // var category = $('#selCategory').val(); //文章类别id
+                // var selStatus = $('#selStatus').val() //文章状态(草稿/已发布)
+                // 根据这两个状态帅选
+                // 但是在我们的转太参数只能  为空/草稿/已发布   所以我们要对结构代码做处理  给selStatus下拉框加一个 value=''
+
+                getData(1)
+            });
+
+
+            // 需要页面一进来就相当于触发了一次筛选按钮的点击事件
+            // 此时并没有真正的点击了筛选按钮,,,我们在模版里虽然  给所有分类加了 value=''的值,,,但在页面进来没有点击
+            // 我们去到的 分类的值就是  那个下拉框里文本值(所有分类四个字)  所以给结构代码里的 所有分类 加上 value=''
+            $('#btnSearch').trigger('click');
+
+
+
+            // 分页效果  插件pagination
+
+
 
 
 
